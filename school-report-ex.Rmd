@@ -1,0 +1,175 @@
+---
+title: "example-report"
+author: "Daniel Anderson"
+date: "1/11/2022"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(readxl)
+library(reactable)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+theme_set(
+  theme_minimal(15)
+)
+
+file <- list.files(pattern = "xlsx")
+d <- read_xlsx(file)
+new_names <- c(
+  "respondent_id",
+  "collector_id",
+  "start_date",
+  "end_date",
+  "email",
+  "first_name",
+  "last_name",
+  "custom_data1",
+  "adults_model_kindness",
+  "kindness_regular_classroom",
+  "kindness_regular_school",
+  "teacher_kind",
+  "encouraged_kind",
+  "grade"
+)
+names(d) <- new_names
+d <- d[-1, ]
+```
+
+# All Grades
+
+```{r }
+cross_tabs <- d %>% 
+  select(respondent_id, contains("kind")) %>% 
+  pivot_longer(-respondent_id) %>% 
+  drop_na() %>% 
+  count(name, value) %>% 
+  group_by(name) %>% 
+  mutate(percent = paste0(round((n / sum(n)) * 100, 2), "%")) %>% 
+  select(-n) %>% 
+  pivot_wider(names_from = "name", values_from = "percent") %>% 
+  mutate(
+    value = factor(
+      value, 
+      levels = c(
+        "Disagree a lot",
+        "Disagree a little",
+        "Don't agree or disagree",
+        "Agree a little",
+        "Agree a lot"
+      )
+    )
+  )
+
+nms <- c(
+  "Response", 
+  "1. The adults in my school model kindness.",
+  "2. Kindness happens regularly in my classrooms.",
+  "3. Kindness happens regularly in my school.",
+  "4. My teacher is kind.",
+  "5. At my school I am encouraged to be kind."
+)
+names(cross_tabs) <- nms
+
+reactable(
+  cross_tabs,
+  columns = list(Response = colDef(name = ""))
+)
+```
+
+```{r }
+get_counts <- function(data, variable) {
+  data %>% 
+    select({{variable}}) %>% 
+    drop_na() %>% 
+    count({{variable}}) %>% 
+    mutate(
+      prop = n / sum(n),
+      labels = paste0(round(prop * 100, 2), "%"),
+      nudge_amount = ifelse(prop > 0.1, -0.09, 0.01),
+      label_color = ifelse(prop > 0.1, "white", "black"),
+    )
+}
+
+plot_counts <- function(counts_df, item_num) {
+  nm <- names(counts_df)[1]
+  ggplot(counts_df, aes(prop, !!sym(nm))) +
+  geom_col(fill = "cornflowerblue", 
+           color = colorspace::darken("cornflowerblue", .3),
+           alpha = 0.9) +
+  scale_x_continuous(
+    "Percentage", 
+    labels = scales::percent,
+    expand = c(0, 0)
+  ) +
+  geom_text(
+    aes(label = labels, color = label_color), 
+    nudge_x = counts_df$nudge_amount,
+    hjust = 0
+  ) +
+  labs(
+    title = nms[item_num + 1],
+    y = "",
+    caption = paste0("n = ", sum(counts_df$n))
+  ) +
+  scale_color_identity() +
+  guides(color = "none") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    plot.title.position = "plot"
+  )
+}
+
+create_plot <- function(var_string, index, grd = NULL) {
+  if (!is.null(grd)) {
+    d <- filter(d, grade == grd)
+  } 
+  
+  d %>% 
+    get_counts(!!sym(var_string)) %>% 
+    plot_counts(index)
+}
+```
+
+```{r }
+vars <- names(d)[grepl("kind", names(d))]
+idxs <- seq_along(vars)
+
+walk2(vars, idxs, ~create_plot(.x, .y) %>%  print())
+```
+
+# Grade 3
+
+```{r }
+walk2(vars, idxs, ~create_plot(.x, .y, grd = 3) %>%  print())
+```
+
+# Grade 4
+
+```{r }
+walk2(vars, idxs, ~create_plot(.x, .y, grd = 4) %>%  print())
+```
+
+# Grade 5
+
+```{r }
+walk2(vars, idxs, ~create_plot(.x, .y, grd = 5) %>%  print())
+```
+
+# Grade 6
+
+```{r }
+walk2(vars, idxs, ~create_plot(.x, .y, grd = 6) %>%  print())
+```
+
+# Grade 12
+
+```{r }
+walk2(vars, idxs, ~create_plot(.x, .y, grd = 12) %>%  print())
+```
+
