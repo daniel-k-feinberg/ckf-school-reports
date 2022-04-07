@@ -1,6 +1,6 @@
 ---
 author: "Daniel Anderson"
-date: "1/11/2022"
+date: "04/07/2022"
 params:
   file: "data/AISD-West.csv"
 output:
@@ -12,7 +12,7 @@ output:
 ---
 
 ---
-title: "Individual School Report: `r gsub("AISD-",  "", gsub("\\.csv", "", basename(params$file))) `"
+title: "Individual School Report: `r gsub("SAISD-",  "", gsub("\\.csv", "", basename(params$file))) `"
 ---
 
 \newpage
