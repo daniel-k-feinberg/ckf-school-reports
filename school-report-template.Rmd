@@ -1,8 +1,8 @@
 ---
-author: "Daniel Anderson"
-date: "04/07/2022"
+author: "Choose Kindness Foundation"
+date: "04/12/2022"
 params:
-  file: "data/AISD-West.csv"
+  file: "data/SAISD-Pershing-Elementary-School.csv"
 output:
   pdf_document:
     toc: yes
@@ -26,7 +26,8 @@ theme_set(
   theme_minimal(15)
 )
 
-d <- readr::read_csv(params$file)
+d_all_records <- readr::read_csv(params$file)
+
 new_names <- c(
   "adults_model_kindness",
   "kindness_regular_classroom",
@@ -35,13 +36,23 @@ new_names <- c(
   "encouraged_kind",
   "grade"
 )
-names(d)[8:13] <- new_names
+names(d_all_records)[8:13] <- new_names
 
 ```
 
+```{r}
+d <- 
+  d_all_records %>% 
+  mutate(
+    timing = if_else(lubridate::year(date_created) == 2022, 'post', 'pre')
+  ) %>% 
+  filter(timing == 'post')
+```
+
+
 # All Grades
 
-```{r }
+```{r results = "asis"}
 nms <- c(
   "Response", 
   "1. The adults in my school model kindness.",
@@ -54,38 +65,84 @@ create_percent <- function(x) {
   paste0(format(round(x, 2), nsmall = 2), "%")  
 }
 
-create_table <- function(data) {
- cross_tabs <- data %>% 
-  select(respondent_id, contains("kind")) %>% 
-  pivot_longer(-respondent_id) %>% 
-  drop_na() %>% 
-  count(name, value) %>% 
-  group_by(name) %>% 
-  mutate(
-    percent = (n / sum(n)) * 100,
-    percent = create_percent(percent)
-  ) %>% 
-  select(-n) %>% 
-  pivot_wider(names_from = "name", values_from = "percent") %>% 
-  mutate(
-    value = factor(
-      value, 
-      levels = c(
-        "Disagree a lot",
-        "Disagree a little",
-        "Don't agree or disagree",
-        "Agree a little",
-        "Agree a lot"
+create_table <- function(data, grades_of_interest) {
+ cross_tabs <- 
+   data %>% 
+    filter(grade %in% grades_of_interest) %>% 
+    select(respondent_id, contains("kind")) %>% 
+    pivot_longer(-respondent_id) %>% 
+    drop_na() %>% 
+    count(name, value) %>% 
+    group_by(name) %>% 
+    mutate(
+      percent = (n / sum(n)) * 100,
+      percent = create_percent(percent)
+    ) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = "name", values_from = "percent") %>% 
+    mutate(
+      value = factor(
+        value, 
+        levels = c(
+          "Disagree a lot",
+          "Disagree a little",
+          "Don't agree or disagree",
+          "Agree a little",
+          "Agree a lot"
+        )
       )
-    )
-  )
+    ) %>% 
+   arrange(desc(value)) %>% 
+   # next step causes issues if not manually specified order
+   select(
+     value, 
+     adults_model_kindness,
+     kindness_regular_classroom,
+     kindness_regular_school,
+     teacher_kind,
+     encouraged_kind
+   )
+
+ names(cross_tabs) <- nms
  
-  names(cross_tabs) <- nms
-  cross_tabs
+ cross_tabs
 }
 
-create_table(d) %>% 
+available_grades <- 
+  d %>% 
+  count(grade) %>% 
+  arrange(grade) %>% 
+  pull(grade)
+
+create_table(d, grades_of_interest = available_grades) %>% 
   knitr::kable(digits = 2)
+
+available_grades_less_than5 <- 
+  d %>% 
+  count(grade) %>% 
+  arrange(grade) %>% 
+  filter(n < 5) %>% 
+  pull(grade)
+
+```
+
+```{r eval=FALSE, include=FALSE, results = "asis"}
+likely_miscoded <- 
+  d %>% 
+  filter(grade %in% available_grades_less_than5) %>% 
+  select(
+    `Respondent ID` = respondent_id, 
+    `Survey ID` = survey_id, 
+    `Listed Grade` = grade
+    ) 
+
+if (available_grades_less_than5 > 0){
+  knitr::kable(
+    likely_miscoded, 
+    digits = 2
+    )
+}
+
 ```
 
 ```{r }
@@ -112,7 +169,8 @@ get_counts <- function(data, variable) {
     )
 }
 
-plot_counts <- function(counts_df, item_num, grade) {
+
+plot_counts <- function(counts_df, item_name, grade) {
   nm <- names(counts_df)[1]
   grade_label <- ifelse(
     is.null(grade), 
@@ -126,8 +184,9 @@ plot_counts <- function(counts_df, item_num, grade) {
            alpha = 0.9) +
   scale_x_continuous(
     "Percentage", 
+    limits = 0:110,
     labels = scales::percent,
-    expand = c(0, 0)
+    expand = c(0, 0) 
   ) +
   scale_y_discrete(drop = FALSE) +
   geom_text(
@@ -136,7 +195,7 @@ plot_counts <- function(counts_df, item_num, grade) {
     hjust = 0
   ) +
   labs(
-    title = nms[item_num + 1],
+    title = item_name,
     y = "",
     caption = paste0(grade_label, "; n = ", sum(counts_df$n))
   ) +
@@ -149,7 +208,7 @@ plot_counts <- function(counts_df, item_num, grade) {
   )
 }
 
-create_plot <- function(var_string, index, grd = NULL) {
+create_plot <- function(var_string, item_name, grd = NULL) {
   if (!is.null(grd)) {
     d <- filter(d, grade == grd)
   } 
@@ -159,40 +218,49 @@ create_plot <- function(var_string, index, grd = NULL) {
   if (nrow(counts) == 0) {
     message(
       "Item ", 
-      gsub("\\.", "", nms[index]), 
+      gsub("\\.", "", nms[item_name]), 
       ", had zero responses."
     )
     return("")
   } else {
-    plot_counts(counts, index, grd)
+    plot_counts(counts, item_name, grd)
   } 
 }
 ```
 
 ```{r }
 vars <- names(d)[grepl("kind", names(d))]
-idxs <- seq_along(vars)
+idxs <- nms[-1]#seq_along(vars)
 
 walk2(vars, idxs, ~create_plot(.x, .y) %>%  print())
 ```
 
 ```{r output-by-grade}
-output_by_grade <- function(data, grade) {
-  cat("\n\\newpage\n\n# Grade", grade)
+output_by_grade <- function(data, grd) {
+  cat("\n\\newpage\n\n# Grade", grd)
   
   d %>% 
-    filter(.data$grade == grade) %>% 
-    create_table() %>% 
+    create_table(grades_of_interest = grd) %>% 
     knitr::kable(digits = 2) %>% 
     print()
   
   cat("\n")
   
-  walk2(vars, idxs, ~create_plot(.x, .y, grd = grade) %>%  print())
+  walk2(vars, idxs, ~create_plot(.x, .y, grd = grd) %>%  print())
 }
 
 ```
 
 ```{r results = "asis"}
-walk(sort(unique(d$grade)), ~output_by_grade(d, grade = .x))
+d_only_correctly_coded <- 
+  d %>% filter(!grade %in% available_grades_less_than5)
+
+walk(
+  sort(
+    unique(d_only_correctly_coded$grade)), 
+  ~output_by_grade(
+    d_only_correctly_coded, 
+    grd = .x
+    )
+  )
 ```
