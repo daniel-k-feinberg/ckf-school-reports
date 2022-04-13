@@ -9,7 +9,7 @@ render_one <- function(csv_file_name) {
     output_file = paste0(school_name, '-report', '.pdf'),
     params = 
       list(
-        file = paste0('data/', csv_file_name)
+        file = paste0('april-12-data/', csv_file_name)
         ),
     envir = parent.frame()
   )

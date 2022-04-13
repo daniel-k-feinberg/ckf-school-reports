@@ -6,7 +6,7 @@ outfiles <- here::here("reports", out)
 
 purrr::walk2(files, outfiles, ~{
   rmarkdown::render(
-    "school-report-ex.Rmd", 
+    "school-report-template.Rmd", 
     output_file = .y,
     params = list(file = .x)
   )
