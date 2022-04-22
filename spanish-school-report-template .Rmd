@@ -2,7 +2,7 @@
 author: "Choose Kindness Foundation"
 date: "04/22/2022"
 params:
-  file: "data/AISD-Carter-Junior-High.csv"
+  file: "data/Newcomer-International-Center-Pre-encuesta.csv"
 output:
   pdf_document:
     toc: yes
@@ -12,7 +12,7 @@ output:
 ---
 
 ---
-title: "Individual School Report: `r gsub("SAISD-",  "", gsub("\\.csv", "", basename(params$file))) `"
+title: "Individual School Report: `r gsub("SAISD-",  "", gsub("\\.csv", "", basename(params$file))) ` (Results of Spanish Survey)"
 ---
 
 \newpage
