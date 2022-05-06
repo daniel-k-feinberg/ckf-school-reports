@@ -19,3 +19,5 @@ schls <- gsub("-$", ".csv", schls)
 filenames <- here::here("data", schls)
 
 walk2(surveys_parsed, filenames, readr::write_csv)
+usethis::edit_r_profile(
+)
