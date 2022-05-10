@@ -1,6 +1,7 @@
 # History files
 .Rhistory
 .Rapp.history
+.Rprofile
 
 # Session Data files
 .RData
@@ -35,13 +36,9 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 
-Ashworth School Kindness Survey Data.xlsx
-.Rprofile
+
 .DS_Store
 data/
 reports/
-April-7-school-reports/
-April-12-school-reports/
-april-12-data/
-April-22-school-reports/
-redo-old-accounts-data/
+old_data/
+old_reports/

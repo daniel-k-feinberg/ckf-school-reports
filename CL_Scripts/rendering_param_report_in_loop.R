@@ -5,7 +5,7 @@ render_one <- function(csv_file_name) {
   
   rmarkdown::render(
     input = 'school-report-template.Rmd',
-    output_dir = 'April-22-school-reports',
+    output_dir = 'reports',
     output_file = paste0(school_name, '-report', '.pdf'),
     params = 
       list(

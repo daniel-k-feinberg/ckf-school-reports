@@ -1,8 +1,8 @@
 ---
 author: "Choose Kindness Foundation"
-date: "04/22/2022"
+date:  "`r format(Sys.Date(), '%m-%d-%y')`"
 params:
-  file: "data/AISD-Carter-Junior-High.csv"
+  file: "data/SAISD-Lowell-Middle-School.csv"
 output:
   pdf_document:
     toc: yes
