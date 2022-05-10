@@ -1,4 +1,4 @@
-## Download Surveymonkey Data May 6
+## Download Surveymonkey Data May 10
 
 library(surveymonkey)
 library(tidyverse)
@@ -9,61 +9,58 @@ options(sm_oauth_token = Sys.getenv("sm_oauth_token"))
 # pull 1000
 tmp <- browse_surveys(1000)
 
-# confirm names
-tmp$title[school_indices]
-
-
-
-## DON'T FORGET THIS ONE 
-# 'SAISD Lowell (Oct & Feb responses)')
-
+tmp %>% View()
 s <- 
   c(
-  #'Ashworth',
-  #'Bagdad',
-  #'Biloxi',
-  #'Button',
-  #'SAISD Booker T. Washington',
-  #'Morristown', # see note re: morristown below
-  'Adams Hill',
-  'Centennial',
-  'Centennial Lane',
-  'Centreville',
-  'Churchill County Middle',
-  'Clute Intermediate',
-  'Dodge Park Elementary',
-  'Dolph Briscoe',
-  'Great Mills',
-  'Green Holly Elementary',
-  'Hephzibah High',
-  'Homewood Center',
-  'Intermediate Unit 1 Campus at Laboratory',
-  'Kate Smith',
-  'Lake Myrtle',
-  'Leake Central',
-  'Mary Bethune Alternative',
-  'Mill Hall',
-  'Pearl River Central Middle',
-  'Langford',
-  'Mary Bethune Alternative',
-  'Mill Hall',
-  'Reinhardt Holm',
-  'Sheldon Pines OAISD',
-  'Social Circle Elementary',
-  'Spencer Butte',
-  'Sugar Hill',
-  'Tyndall Academy',
-  'Walterville',
-  'Waterville Elysian Morristown',
-  'Wyncote',
-  'SAISD Ferdinand Herff'
+## batch I didn't have permissions for
+  'Ashworth',
+  'Bagdad',
+  'Biloxi',
+  'Button',
+  'SAISD Booker'
   )
+## one batch
+  #'Morristown', # see note re: morristown below
+  # 'Adams Hill',
+  # 'Centennial',
+  # 'Centennial Lane',
+  # 'Centreville',
+  # 'Churchill County Middle',
+  # 'Clute Intermediate',
+  # 'Dodge Park Elementary',
+  # 'Dolph Briscoe',
+  # 'Great Mills',
+  # 'Green Holly Elementary',
+  # 'Hephzibah High',
+  # 'Homewood Center',
+  # 'Intermediate Unit 1 Campus at Laboratory',
+  # 'Kate Smith',
+  # 'Lake Myrtle',
+  # 'Leake Central',
+  # 'Mary Bethune Alternative',
+  # 'Mill Hall',
+  # 'Pearl River Central Middle',
+  # 'Langford',
+  # 'Mary Bethune Alternative',
+  # 'Mill Hall',
+  # 'Reinhardt Holm',
+  # 'Sheldon Pines OAISD',
+  # 'Social Circle Elementary',
+  # 'Spencer Butte',
+  # 'Sugar Hill',
+  # 'Tyndall Academy',
+  # 'Walterville',
+  # 'Waterville Elysian Morristown',
+  # 'Wyncote',
+  # 'SAISD Ferdinand Herff', 
+  # 'SAISD Lowell'
+  # )
   
 
 ## get rows of ready schools
 
 school_indices <- 
-  map_dbl(
+  map(
     .x = s,
     .f = 
       ~which(
@@ -79,9 +76,9 @@ may_10_schools <-
   tmp %>% 
   slice(school_indices) %>% 
 # morristown's exact name is contained in another name, so 
-# calling the object like this
+#calling the object like this
   bind_rows(
-    tmp %>% 
+    tmp %>%
       filter(id == 309757278)
     )
 
