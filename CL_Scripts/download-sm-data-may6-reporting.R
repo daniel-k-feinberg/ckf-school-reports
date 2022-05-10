@@ -9,7 +9,6 @@ options(sm_oauth_token = Sys.getenv("sm_oauth_token"))
 # pull 1000
 tmp <- browse_surveys(1000)
 
-tmp %>% View()
 s <- 
   c(
 ## batch I didn't have permissions for
@@ -60,7 +59,7 @@ s <-
 ## get rows of ready schools
 
 school_indices <- 
-  map(
+  map_dbl(
     .x = s,
     .f = 
       ~which(
@@ -74,13 +73,13 @@ school_indices <-
 
 may_10_schools <- 
   tmp %>% 
-  slice(school_indices) %>% 
+  slice(school_indices) #%>% 
 # morristown's exact name is contained in another name, so 
 #calling the object like this
-  bind_rows(
-    tmp %>%
-      filter(id == 309757278)
-    )
+  # bind_rows(
+  #   tmp %>%
+  #     filter(id == 309757278)
+  #   )
 
 # fetching
 surveys <- map(may_10_schools$id, fetch_survey_obj)
