@@ -1,8 +1,8 @@
 ---
 author: "Choose Kindness Foundation"
-date: "04/22/2022"
+date: "`r format(Sys.Date(), '%m-%d-%y')`"
 params:
-  file: "data/Newcomer-International-Center-Pre-encuesta.csv"
+  file: "data/Jupiter-Elementary-Encuesta-sobre-la-bondad.csv"
 output:
   pdf_document:
     toc: yes
@@ -46,9 +46,36 @@ d <-
   mutate(
     timing = if_else(lubridate::year(date_created) == 2022, 'post', 'pre')
   ) %>% 
-  filter(timing == 'post')
+  filter(timing == 'post') %>% 
+  mutate(
+    across(
+      .cols = c(
+        adults_model_kindness,
+        kindness_regular_classroom,
+        kindness_regular_school,
+        teacher_kind,
+        encouraged_kind
+        ), 
+      .fns =
+      ~factor(.x,
+          levels = 
+            c('En desacuerdo mucho',
+              'En desacuerdo poco',
+              'No estoy de acuerdo o en desacuerdo',
+              'De acuerdo un poco',
+              'De acuerdo mucho'
+            ), 
+          labels = 
+            c("Disagree a lot",
+              "Disagree a little",
+              "Don't agree or disagree",
+              "Agree a little",
+              "Agree a lot"
+            )
+        )
+      )
+  ) 
 ```
-
 
 # All Grades
 

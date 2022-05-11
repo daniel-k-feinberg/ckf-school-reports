@@ -2,7 +2,7 @@
 author: "Choose Kindness Foundation"
 date:  "`r format(Sys.Date(), '%m-%d-%y')`"
 params:
-  file: "data/SAISD-Lowell-Middle-School.csv"
+  file: "data/Newcomer-International-Center-School.csv"
 output:
   pdf_document:
     toc: yes
